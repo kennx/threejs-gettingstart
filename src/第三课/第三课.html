@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>动力IT实训-threejs-003</title>
+        <meta charset="UTF-8" />
+        <script text="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script>
+        <style>
+            body{margin: 0;overflow: hidden;}
+        </style>
+    </head>
+    <body>
+        <!--我们将把threejs渲染的效果显示在这个div中-->
+        <div id="puiedu-webgl-output">
+
+        </div>
+        
+        <script type="module">
+            import {Scene,PerspectiveCamera,WebGLRenderer,BoxGeometry,MeshBasicMaterial,Mesh} from "../../libs/three.js/three.js";
+
+            var scene = new Scene();
+            var camera = new PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);
+
+            var render = new WebGLRenderer();
+            render.setSize(window.innerWidth,window.innerHeight);
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+
+            var geometry = new BoxGeometry();
+            var material = new MeshBasicMaterial({color:0xff2288});
+            var cube = new Mesh(geometry,material);
+            scene.add(cube);
+
+            camera.position.z = 5;
+            
+            cube.rotation.x += 0.80;
+            cube.rotation.y += 0.80;
+
+            render.render(scene,camera);
+
+        </script>
+
+    </body>
+</html>

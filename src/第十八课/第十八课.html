@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-018</title>
+    <meta charset="UTF-8" />
+    <!-- <script type="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script> -->
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+
+            import * as THREE from "../../libs/build/three.module.js"
+            import {dat} from "../../libs/dat.gui/dat.gui.js"
+            import {OrbitControls} from "../../libs/three.js/jsm/controls/OrbitControls.js"
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);            
+
+            var render = new THREE.WebGLRenderer();
+            render.setClearColor(new THREE.Color(0x000000));
+            render.setSize(window.innerWidth,window.innerHeight);
+            render.shadowMap.enabled = true;
+            
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+            
+            var axes = new THREE.AxesHelper(100);
+            scene.add(axes);
+
+            var logoShape = new THREE.Shape();
+            logoShape.moveTo(0,0);
+            logoShape.lineTo(34,0);
+            logoShape.lineTo(30,38);
+            logoShape.lineTo(-5,47);
+            logoShape.lineTo(-23,13);
+            logoShape.lineTo(-6,-25);
+            logoShape.lineTo(-5,21);
+            logoShape.lineTo(10,28);
+            logoShape.lineTo(25,10);
+            logoShape.lineTo(0,0);
+            var logoGeo = new THREE.ShapeGeometry(logoShape);
+            var logoMat = new THREE.MeshBasicMaterial({color:0xff0000,side:THREE.DoubleSide});
+            var logo2D = new THREE.Mesh(logoGeo,logoMat);
+            //scene.add(logo2D);
+
+            var extrudeSetting = {
+                steps:1,
+                depth:1,
+                bevelEnabled:true,
+                bevelThickness:5,
+                bevelSize:-0.1,
+                bevelOffset:0,
+                bevelSegments:3,
+                wireframe:false,
+            }
+            
+            var extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+            var extrudeMat = new THREE.MeshBasicMaterial({color:0xff0000,side:THREE.DoubleSide});
+            var logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+            scene.add(logo3D);
+
+            var ctrl = new dat.GUI();
+            var logo3DFolder = ctrl.addFolder("logo3D");
+            logo3DFolder.add(extrudeSetting,"wireframe").onChange(function(){
+                scene.remove(logo3D);
+                extrudeMat.wireframe = extrudeSetting.wireframe;
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"steps",0,5).onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"depth",0,20).onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"bevelEnabled").onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"bevelThickness",0,20).onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"bevelSize",-5,5).onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"bevelOffset",0,5).onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+            logo3DFolder.add(extrudeSetting,"bevelSegments",0,50).onChange(function(){
+                scene.remove(logo3D);
+                extrudeGeo = new THREE.ExtrudeGeometry(logoShape,extrudeSetting);
+                logo3D = new THREE.Mesh(extrudeGeo,extrudeMat);
+                scene.add(logo3D);
+            });
+
+            camera.position.x = 0;
+            camera.position.y = 0;
+            camera.position.z = 50;
+            camera.lookAt(scene.position);
+            scene.add(camera);
+        
+            var controls = new OrbitControls(camera,render.domElement);
+            controls.update();
+
+            renderScene();
+
+            function renderScene(){ 
+                controls.update();
+                requestAnimationFrame(renderScene);
+                render.render(scene,camera);
+            }
+
+            window.addEventListener('resize',onWindowResize,false);
+
+            function onWindowResize(){                
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                render.setSize(window.innerWidth,window.innerHeight);
+            }
+            </script>
+
+</body>
+
+</html>

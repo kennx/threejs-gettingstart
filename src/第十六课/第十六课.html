@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-016</title>
+    <meta charset="UTF-8" />
+    <!-- <script type="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script> -->
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+
+            import * as THREE from "../../libs/build/three.module.js"
+            import {dat} from "../../libs/dat.gui/dat.gui.js"
+            import {OrbitControls} from "../../libs/three.js/jsm/controls/OrbitControls.js"
+            import {ConvexGeometry} from "../../libs/three.js/jsm/geometries/ConvexGeometry.js"
+            import {LatheGeometry} from "../../libs/three.js/geometries/LatheGeometry.js"   
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);            
+
+            var render = new THREE.WebGLRenderer();
+            render.setClearColor(new THREE.Color(0x000000));
+            render.setSize(window.innerWidth,window.innerHeight);
+            render.shadowMap.enabled = true;
+            
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+            
+            var convexPoints = [];
+            for(var i = 0; i < 20; i++){
+                var x = Math.random()*40 -20;
+                var y = Math.random()*40 - 20;
+                var z = Math.random()*40 - 20;
+                convexPoints.push(new THREE.Vector3(x,y,z));
+            } 
+            convexPoints.forEach(function(convexPoint){
+                var convexSphereGeo = new THREE.SphereGeometry(0.3);
+                var convexSphereMat = new THREE.MeshBasicMaterial({color:0xff0000});
+                var convexSphere = new THREE.Mesh(convexSphereGeo,convexSphereMat);
+                convexSphere.position.copy(convexPoint);
+                //scene.add(convexSphere);
+            })
+            var axes = new THREE.AxesHelper(100);
+            scene.add(axes);
+
+            var convexGeo = new ConvexGeometry(convexPoints);
+            var convexMat = new THREE.MeshBasicMaterial({color:0x00ff00,wireframe:true});
+            var convex = new THREE.Mesh(convexGeo,convexMat);
+            //scene.add(convex);
+
+            var lathePoints = [];
+            for(var i = 5; i < 30; i++){
+                lathePoints.push(new THREE.Vector2(i+1,-Math.sin((i+1)/10)*10-Math.cos((i+1)/10)*10));
+            }
+            
+            var latheGeo = new LatheGeometry(lathePoints,50,0,Math.PI*2);
+            var latheMat = new THREE.MeshBasicMaterial({color:0x00ff00,wireframe:true});
+            var lathe = new THREE.Mesh(latheGeo,latheMat);
+            scene.add(lathe);
+
+            var ctrlObj = {
+                segments:50,
+                phiStart:0,
+                phiLength:Math.PI*2,
+            }
+
+            var ctrl = new dat.GUI();
+            var latheFolder = ctrl.addFolder("lathe");
+            latheFolder.add(ctrlObj,"segments",0,100).onChange(function(){
+                scene.remove(lathe);
+                var latheGeo = new LatheGeometry(lathePoints,ctrlObj.segments,ctrlObj.phiStart,ctrlObj.phiLength);
+                lathe = new THREE.Mesh(latheGeo,latheMat);
+                scene.add(lathe);
+            })
+            latheFolder.add(ctrlObj,"phiStart",0,2*Math.PI).onChange(function(){
+                scene.remove(lathe);
+                var latheGeo = new LatheGeometry(lathePoints,ctrlObj.segments,ctrlObj.phiStart,ctrlObj.phiLength);
+                lathe = new THREE.Mesh(latheGeo,latheMat);
+                scene.add(lathe);
+            })
+            latheFolder.add(ctrlObj,"phiLength",0,2*Math.PI).onChange(function(){
+                scene.remove(lathe);
+                var latheGeo = new LatheGeometry(lathePoints,ctrlObj.segments,ctrlObj.phiStart,ctrlObj.phiLength);
+                lathe = new THREE.Mesh(latheGeo,latheMat);
+                scene.add(lathe);
+            })
+
+            camera.position.x = 0;
+            camera.position.y = 0;
+            camera.position.z = 50;
+            camera.lookAt(scene.position);
+            scene.add(camera);
+        
+            var controls = new OrbitControls(camera,render.domElement);
+            controls.update();
+
+            renderScene();
+
+            function renderScene(){ 
+                controls.update();
+                requestAnimationFrame(renderScene);
+                render.render(scene,camera);
+            }
+
+            window.addEventListener('resize',onWindowResize,false);
+
+            function onWindowResize(){                
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                render.setSize(window.innerWidth,window.innerHeight);
+            }
+            </script>
+
+</body>
+
+</html>

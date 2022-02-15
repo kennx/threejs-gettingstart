@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-007</title>
+    <meta charset="UTF-8" />
+    <!-- <script type="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script> -->
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+        import {Scene,PerspectiveCamera,WebGLRenderer,BoxGeometry,
+                MeshBasicMaterial,Mesh,PlaneGeometry,MeshLambertMaterial,
+                AmbientLight,SpotLight,Vector2,AxesHelper,Color,Fog,FogExp2,
+                TorusGeometry,CylinderGeometry,BufferGeometry,BufferAttribute,
+                DoubleSide,WireframeGeometry,LineSegments} from "../../libs/three.js/three.js"
+
+                import {dat} from "../../libs/dat.gui/dat.gui.js"
+                
+            var scene = new Scene();
+            var camera = new PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);
+
+            var render = new WebGLRenderer();
+            render.setClearColor(new Color(0x000000));
+            render.setSize(window.innerWidth,window.innerHeight);
+            render.shadowMap.enabled = true;
+            
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+
+             // show axes in the screen
+            var axes = new AxesHelper(50);
+            scene.add(axes);
+
+            var geometry = new BoxGeometry(8,8,8);      //几何体
+            var material = new MeshLambertMaterial({color:0xff2288});   //材质
+            var cube = new Mesh(geometry,material);     //网格
+            cube.castShadow = true;
+
+            cube.position.x = 34;
+            cube.position.y = 8;
+            cube.position.z = 10;
+
+            // scene.add(cube); 
+            var refGeo = new BoxGeometry(8,8,8);      //几何体
+            var refmaterial = new MeshLambertMaterial({color:0xff2288});   //材质
+            var refcube = new Mesh(refGeo,refmaterial);     //网格
+            refcube.castShadow = true;
+
+            refcube.position.x = 0;
+            refcube.position.y = 10;
+            refcube.position.z = 0;
+            scene.add(refcube);
+            
+            var showGeo = new BoxGeometry(8,8,8);      //几何体
+            var showmaterial = new MeshLambertMaterial({color:0x00ff00});   //材质
+            var showcube = new Mesh(showGeo,showmaterial);     //网格
+            showcube.castShadow = true;
+
+            showcube.position.x = 0;
+            showcube.position.y = 10;
+            showcube.position.z = 0;
+            scene.add(showcube);     
+            
+            var ctrlObj = {
+                scaleX:1,
+                scaleY:1,
+                scaleZ:1,
+                positionX:0,
+                positionY:10,
+                positionZ:0,
+                rotationX:0,
+                rotationY:0,
+                rotationZ:0,
+                visible:true,
+                translateX:0,
+                translateY:0,
+                translateZ:0,
+            }
+
+            var ctrl = new dat.GUI();
+            ctrl.add(ctrlObj,"scaleX",0,5);
+            ctrl.add(ctrlObj,"scaleY",0,5);
+            ctrl.add(ctrlObj,"scaleZ",0,5);
+
+            ctrl.add(ctrlObj,"positionX",-30,30);
+            ctrl.add(ctrlObj,"positionY",-30,30);
+            ctrl.add(ctrlObj,"positionZ",-30,30);
+
+            ctrl.add(ctrlObj,"rotationX",-5,5);
+            ctrl.add(ctrlObj,"rotationY",-5,5);
+            ctrl.add(ctrlObj,"rotationZ",-5,5);
+
+            ctrl.add(ctrlObj,"visible");
+
+            ctrl.add(ctrlObj,"translateX",-25,25);
+            ctrl.add(ctrlObj,"translateY",-25,25);
+            ctrl.add(ctrlObj,"translateZ",-25,25);
+
+            //圆环几何体
+            var torusgeo = new TorusGeometry(10,2,10,10);
+            var torusmaterial = new MeshLambertMaterial({color:0xff2288});
+            var torus = new Mesh(torusgeo,torusmaterial);
+            torus.castShadow = true;
+            torus.position.x = 20;
+            torus.position.y = 10;
+            torus.position.z = -20;
+            // scene.add(torus); 
+
+            //圆柱几何体
+            var cylindergeo = new CylinderGeometry(4,4,14);
+            var cylindermaterial = new MeshLambertMaterial({color:0xff2288});
+            var cylinder = new Mesh(cylindergeo,cylindermaterial);
+            cylinder.castShadow = true;
+            cylinder.position.x = -10;
+            cylinder.position.y = 10;
+            cylinder.position.z = -20;
+            // scene.add(cylinder); 
+
+            //自定义几何体
+            var geometry = new BufferGeometry();
+            var vertices = new Float32Array([
+                //第一个面
+                0,0,0,
+                10,0,0,
+                0,10,0,
+                10,0,0,
+                0,10,0,
+                10,10,0,
+                //第二个面
+                0,0,0,
+                0,10,0,
+                0,10,10,
+                0,10,10,
+                0,0,0,
+                0,0,10,
+                //第三个面
+                10,0,0,
+                10,10,0,
+                10,10,10,
+                10,0,0,
+                10,0,10,
+                10,10,10,
+                //第四个面
+                0,0,0,
+                0,0,10,
+                10,0,0,
+                10,0,0,
+                10,0,10,
+                0,0,10,
+                //第五个面
+                0,10,0,
+                0,10,10,
+                10,10,0,
+                10,10,0,
+                10,10,10,
+                0,10,10,
+                //第六个面
+                0,0,10,
+                10,0,10,
+                0,10,10,
+                10,0,10,
+                0,10,10,
+                10,10,10,
+                //第七个面
+                10,10,0,
+                0,10,0,
+                2,20,5,
+                //第八个面
+                0,10,0,
+                0,10,10,
+                2,20,5,
+                //第九个面
+                0,10,10,
+                10,10,10,
+                2,20,5,
+                //第十个面
+                10,10,10,
+                10,10,0,
+                2,20,5,
+            ])
+
+            var attribute = new BufferAttribute(vertices,3);
+            geometry.attributes.position = attribute;
+            var material = new MeshBasicMaterial({
+                color:0x0000ff,
+                side:DoubleSide,
+            });
+
+            var mesh = new Mesh(geometry,material);
+            // scene.add(mesh);
+
+            var wireFrame = new WireframeGeometry(geometry);
+            var line = new LineSegments(wireFrame);
+            line.material.depthTest = true;
+            // line.material.transparent = false;
+            // line.material.opacity = 0.5;
+            // scene.add(line);
+
+            //克隆方法
+            // var ctrl = new dat.GUI();
+            // ctrl.add(new function(){
+            //     this.clone = function(){
+            //         var cloneGeometry = mesh.geometry.clone();
+            //         var clonematerial = new MeshBasicMaterial({
+            //             color:0xff0000,
+            //             side:DoubleSide,
+            //         });
+
+            //         var clonemesh = new Mesh(cloneGeometry,clonematerial);
+            //         clonemesh.translateZ(20);
+            //         clonemesh.name = "copy";
+            //         scene.remove(scene.getChildByName("copy"));
+            //         scene.add(clonemesh);
+
+            //         var clonewireFrame = new WireframeGeometry(cloneGeometry);
+            //         var cloneline = new LineSegments(clonewireFrame);
+            //         cloneline.material.depthTest = true;
+            //         cloneline.translateZ(20);
+            //         scene.add(cloneline);
+
+            //     }
+            // },"clone")
+
+            var planeGeometry = new PlaneGeometry(100,100);
+            var planeMaterial = new MeshLambertMaterial({color:0xAAAAAA});
+            var plane = new Mesh(planeGeometry,planeMaterial);
+
+            plane.rotation.x = -0.5 * Math.PI;
+            plane.position.set(15,0,0);
+            plane.receiveShadow = true;
+
+            scene.add(plane);
+
+            camera.position.x = -30;
+            camera.position.y = 40;
+            camera.position.z = 30;
+            camera.lookAt(scene.position);
+            
+            cube.rotation.x += 0.80;
+            cube.rotation.y += 0.80;
+
+            var spotLight = new SpotLight(0xFFFFFF);
+            spotLight.position.set(-60, 40, -65);
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize = new Vector2(1024, 1024);
+            spotLight.shadow.camera.far = 130;
+            spotLight.shadow.camera.near = 40;
+
+            scene.add(camera);
+            // If you want a more detailled shadow you can increase the 
+            // mapSize used to draw the shadows.
+            // spotLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+            scene.add(spotLight);
+
+            var ambienLight = new AmbientLight(0xcccccc);
+            scene.add(ambienLight);
+
+
+           // render.render(scene,camera);
+            renderScene();
+            //console.log(scene.children.length);
+            var gap = 0;
+            function renderScene(){ 
+                showcube.scale.set(ctrlObj.scaleX,ctrlObj.scaleY,ctrlObj.scaleZ);
+                showcube.position.set(ctrlObj.positionX,ctrlObj.positionY,ctrlObj.positionZ);
+                showcube.rotation.set(ctrlObj.rotationX,ctrlObj.rotationY,ctrlObj.rotationZ);
+                showcube.visible = ctrlObj.visible;                
+                showcube.translateX(ctrlObj.translateX);
+                showcube.translateY(ctrlObj.translateY);
+                showcube.translateZ(ctrlObj.translateZ);
+
+                requestAnimationFrame(renderScene);
+                render.render(scene,camera);
+            }
+
+
+            window.addEventListener('resize',onWindowResize,false);
+
+            function onWindowResize(){
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                render.setSize(window.innerWidth,window.innerHeight);
+            }
+        </script>
+
+</body>
+
+</html>

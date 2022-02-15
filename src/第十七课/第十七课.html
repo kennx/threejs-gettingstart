@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-017</title>
+    <meta charset="UTF-8" />
+    <!-- <script type="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script> -->
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+
+            import * as THREE from "../../libs/build/three.module.js"
+            import {dat} from "../../libs/dat.gui/dat.gui.js"
+            import {OrbitControls} from "../../libs/three.js/jsm/controls/OrbitControls.js"
+            import {ConvexGeometry} from "../../libs/three.js/jsm/geometries/ConvexGeometry.js"
+            import {LatheGeometry} from "../../libs/three.js/geometries/LatheGeometry.js"   
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);            
+
+            var render = new THREE.WebGLRenderer();
+            render.setClearColor(new THREE.Color(0x000000));
+            render.setSize(window.innerWidth,window.innerHeight);
+            render.shadowMap.enabled = true;
+            
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+            
+
+            var axes = new THREE.AxesHelper(100);
+            scene.add(axes);
+
+            var points = [];
+            for(var i = 0; i < 10; i++){
+                points.push(new THREE.Vector3(i*3,Math.sin(i)*5,i*3));
+                // points.push(new THREE.Vector3(i*3,i*3,i*3));
+                // var x = Math.random()*40 -20;
+                // var y = Math.random()*40 -20;
+                // var z = Math.random()*40 -20;
+                // points.push(new THREE.Vector3(x,y,z));
+            }
+            points.forEach(function(point){
+                var sphereGeo = new THREE.SphereGeometry(0.2);
+                var sphereMat = new THREE.MeshBasicMaterial({color:0xff0000});
+                var sphere = new THREE.Mesh(sphereGeo,sphereMat);
+                sphere.position.copy(point);
+                scene.add(sphere);
+            });
+
+            var path = new THREE.CatmullRomCurve3(points);
+            var lineGeo = new THREE.BufferGeometry();
+            lineGeo.setFromPoints(path.getPoints(100));
+            var lineMat = new THREE.LineBasicMaterial({color:0xff0000});
+            var line = new THREE.Line(lineGeo,lineMat);
+            scene.add(line);
+
+            var tubeGeo = new THREE.TubeGeometry(path,50,3,30,false);
+            var tubeMat = new THREE.MeshBasicMaterial({color:0x00ff00,wireframe:true});
+            var tube = new THREE.Mesh(tubeGeo,tubeMat);
+            scene.add(tube);
+
+            var ctrlObj = {
+                tubalarSegments:50,
+                radius:3,
+                radialSegments:30,
+                closed:false,
+            }
+
+            var ctrl = new dat.GUI();
+            var tubeFolder = ctrl.addFolder("tube");
+            tubeFolder.add(ctrlObj,"tubalarSegments",0,100).onChange(function(){
+                scene.remove(tube);
+                tubeGeo = new THREE.TubeGeometry(path,ctrlObj.tubalarSegments,ctrlObj.radius,ctrlObj.radialSegments,ctrlObj.closed);
+                tube = new THREE.Mesh(tubeGeo,tubeMat);
+                scene.add(tube);
+            });
+            tubeFolder.add(ctrlObj,"radius",0,10).onChange(function(){
+                scene.remove(tube);
+                tubeGeo = new THREE.TubeGeometry(path,ctrlObj.tubalarSegments,ctrlObj.radius,ctrlObj.radialSegments,ctrlObj.closed);
+                tube = new THREE.Mesh(tubeGeo,tubeMat);
+                scene.add(tube);
+            });
+            tubeFolder.add(ctrlObj,"radialSegments",0,100).onChange(function(){
+                scene.remove(tube);
+                tubeGeo = new THREE.TubeGeometry(path,ctrlObj.tubalarSegments,ctrlObj.radius,ctrlObj.radialSegments,ctrlObj.closed);
+                tube = new THREE.Mesh(tubeGeo,tubeMat);
+                scene.add(tube);
+            });
+            tubeFolder.add(ctrlObj,"closed").onChange(function(){
+                scene.remove(tube);
+                tubeGeo = new THREE.TubeGeometry(path,ctrlObj.tubalarSegments,ctrlObj.radius,ctrlObj.radialSegments,ctrlObj.closed);
+                tube = new THREE.Mesh(tubeGeo,tubeMat);
+                scene.add(tube);
+            });
+
+            camera.position.x = 0;
+            camera.position.y = 0;
+            camera.position.z = 50;
+            camera.lookAt(scene.position);
+            scene.add(camera);
+        
+            var controls = new OrbitControls(camera,render.domElement);
+            controls.update();
+
+            renderScene();
+
+            function renderScene(){ 
+                controls.update();
+                requestAnimationFrame(renderScene);
+                render.render(scene,camera);
+            }
+
+            window.addEventListener('resize',onWindowResize,false);
+
+            function onWindowResize(){                
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                render.setSize(window.innerWidth,window.innerHeight);
+            }
+            </script>
+
+</body>
+
+</html>

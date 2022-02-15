@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-030</title>
+    <meta charset="UTF-8" />
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+
+        import * as THREE from "../../libs/build/three.module.js"
+        import { dat } from "../../libs/dat.gui/dat.gui.js"
+        import { OrbitControls } from "../../libs/three.js/jsm/controls/OrbitControls.js"
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+        camera.position.set(20, 20, 20);
+
+        var render = new THREE.WebGLRenderer();
+        render.setSize(window.innerWidth, window.innerHeight);
+        render.shadowMap.enabled = true;
+
+        document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+
+        var axes = new THREE.AxesHelper(100);
+        scene.add(axes);
+
+        camera.position.x = -20;
+        camera.position.y = 250;
+        camera.position.z = 100;
+        camera.lookAt(scene.position);
+        scene.add(camera);
+
+        var controls = new OrbitControls(camera, render.domElement);
+        controls.update();
+
+        var ctrl = new dat.GUI();
+
+        //createSprites();
+        //createPoints();
+        //createParticles();        
+        createParticles("system1", "./texture/snowflake1_t.png");
+        createParticles("system2", "./texture/snowflake2_t.png");
+       // createParticles("system3", "./texture/snowflake3_t.png");
+      //  createParticles("system4", "./texture/snowflake5_t.png");
+
+        renderScene();
+
+        function renderScene() {
+            controls.update();
+
+            scene.children.forEach(function (child) {
+                if (child instanceof THREE.Points) {
+                    var cloud = child;
+                    const pos_BufferAttr = cloud.geometry.getAttribute('position');
+                    const vel_BufferAttr = cloud.geometry.getAttribute('velocity');
+
+                    for (var i = 0; i < pos_BufferAttr.count; i++) {
+                        var pos_x = pos_BufferAttr.getX(i);
+                        var pos_y = pos_BufferAttr.getY(i);
+                        var pos_z = pos_BufferAttr.getZ(i);
+
+                        var vel_x = vel_BufferAttr.getX(i);
+                        var vel_y = vel_BufferAttr.getY(i);
+                        var vel_z = vel_BufferAttr.getZ(i);
+
+                        pos_x = pos_x - vel_x;
+                        pos_y = pos_y - vel_y;
+                        pos_z = pos_z - vel_z;
+
+                        if (pos_x <= -200 || pos_x >= 200) vel_x = vel_x * -1;
+                        if (pos_y <= 0) pos_y = 600;
+                        if (pos_z <= -200 || pos_z >= 200) vel_z = vel_z * -1;
+
+                        pos_BufferAttr.setX(i, pos_x);
+                        pos_BufferAttr.setY(i, pos_y);
+                        pos_BufferAttr.setZ(i, pos_z);
+
+                        vel_BufferAttr.setX(i, vel_x);
+                        vel_BufferAttr.setZ(i, vel_z);
+                    }
+
+                    pos_BufferAttr.needsUpdate = true;
+                    vel_BufferAttr.needsUpdate = true;
+                }
+            });
+
+            requestAnimationFrame(renderScene);
+            render.render(scene, camera);
+        }
+
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            render.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function createParticles(name, strTexturePath) {
+            var geom = new THREE.BufferGeometry();
+            var material = new THREE.PointsMaterial({
+                size: 10,
+                transparent: true,
+                opacity: 0.6,
+                vertexColors: false,
+                map: getTexture(strTexturePath),
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true,
+                color: new THREE.Color(0xffffff)
+            });
+
+            var positions = [];
+            var velocities = [];
+
+            var range = 400;
+            for (var i = 0; i < 15000; i++) {
+                positions.push(Math.random() * range - range / 2,
+                    Math.random() * range * 1.5,
+                    Math.random() * range - range / 2);
+
+                velocities.push((Math.random() - 0.5) / 3, 0.1 + Math.random() / 5, (Math.random() - 0.5) / 3);
+            }
+
+            geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geom.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities, 3));
+
+            var cloud = new THREE.Points(geom, material);
+            cloud.name = name;
+            scene.add(cloud);
+        }
+
+        function createPoints() {
+            var geom = new THREE.BufferGeometry();
+            var material = new THREE.PointsMaterial({
+                size: 2,
+                vertexColors: true,
+                color: 0xffffff,
+                map: getTexture("./texture/sprite-sheet.png")
+            });
+
+            material.map.offset = new THREE.Vector2(0.2, 0);
+            material.map.repeat = new THREE.Vector2(1 / 5, 1);
+            material.depthTest = false;
+
+            var positions = [];
+            var colors = [];
+
+            for (var x = -30; x < 30; x++) {
+                for (var y = -20; y < 20; y++) {
+                    for (var z = -30; z < 30; z++) {
+                        positions.push(x * 4, y * 4, z * 40);
+                        var clr = new THREE.Color(0xffffff);
+                        colors.push(clr.r, clr.g, clr.b);
+                    }
+                }
+            }
+
+            geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geom.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            var cloud = new THREE.Points(geom, material);
+            scene.add(cloud);
+        }
+
+        function getTexture(strPNGPath) {
+            var texture = new THREE.TextureLoader().load(strPNGPath);
+            return texture;
+        }
+
+        function createSprites() {
+            for (var x = -30; x < 30; x++) {
+                for (var y = -20; y < 20; y++) {
+                    for (var z = -30; z < 30; z++) {
+                        var spriteMaterial = new THREE.SpriteMaterial({
+                            opacity: 0.5,
+                            transparent: false,
+                            color: 0xffffff,
+                            map: getTexture("./texture/sprite-sheet.png")
+                        });
+
+                        spriteMaterial.map.offset = new THREE.Vector2(0.2, 0);
+                        spriteMaterial.map.repeat = new THREE.Vector2(1 / 5, 1);
+                        spriteMaterial.depthTest = false;
+
+                        var sprite = new THREE.Sprite(spriteMaterial);
+                        sprite.position.set(x * 4, y * 4, z * 100);
+                        scene.add(sprite);
+                    }
+                }
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

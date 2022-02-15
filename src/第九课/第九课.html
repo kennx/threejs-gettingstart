@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-009</title>
+    <meta charset="UTF-8" />
+    <!-- <script type="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script> -->
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+        import {Scene,PerspectiveCamera,OrthographicCamera,WebGLRenderer,BoxGeometry,
+                MeshBasicMaterial,Mesh,PlaneGeometry,MeshLambertMaterial,
+                AmbientLight,SpotLight,Vector2,AxesHelper,Color,Fog,FogExp2,
+                TorusGeometry,CylinderGeometry,BufferGeometry,BufferAttribute,
+                DoubleSide,WireframeGeometry,LineSegments,
+                SpotLightHelper,CameraHelper} from "../../libs/three.js/three.js"
+
+                import {dat} from "../../libs/dat.gui/dat.gui.js"
+                
+            var scene = new Scene();
+            var camera = new PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);            
+
+            var render = new WebGLRenderer();
+            render.setClearColor(new Color(0x000000));
+            render.setSize(window.innerWidth,window.innerHeight);
+            render.shadowMap.enabled = true;
+            
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+
+             // show axes in the screen
+            var axes = new AxesHelper(50);
+            scene.add(axes);            
+
+
+            var planeGeometry = new PlaneGeometry(100,100);
+            var planeMaterial = new MeshLambertMaterial({color:0xAAAAAA});
+            var plane = new Mesh(planeGeometry,planeMaterial);
+
+            plane.rotation.x = -0.5 * Math.PI;
+            plane.position.set(15,0,0);
+            plane.receiveShadow = true;
+
+            scene.add(plane);
+
+            camera.position.x = -30;
+            camera.position.y = 140;
+            camera.position.z = 30;
+            camera.lookAt(scene.position);
+
+            var spotLight = new SpotLight(0xFFFFFF);
+            spotLight.position.set(-60, 30, -65);
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize = new Vector2(1024, 1024);
+            spotLight.shadow.camera.far = 130;
+            spotLight.shadow.camera.near = 40;
+
+            scene.add(camera);
+            // If you want a more detailled shadow you can increase the 
+            // mapSize used to draw the shadows.
+            // spotLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
+            scene.add(spotLight);
+            
+            var lightHelper = new SpotLightHelper(spotLight);
+            scene.add(lightHelper);
+
+            var shadowCameraHelper = new CameraHelper(spotLight.shadow.camera);
+            scene.add(shadowCameraHelper);
+
+            var ambienLight = new AmbientLight(0xcccccc);
+            //scene.add(ambienLight); 
+
+            var ctrlObj = {
+                //AmbientLight
+                ambienLightintensity:1,
+                ambienLightColor:0xcccccc,
+                //SpotLight
+                spotLightintensity:1,
+                spotLightColor:0xFFFFFF,
+                spotLightDistance:0,
+                spotLightAngle:Math.PI / 3,
+                spotPenumbra:0,
+                spotDecay:0,
+            }
+
+            var ctrl = new dat.GUI();
+            var ambienLightFolder = ctrl.addFolder("ambienLight");
+            ambienLightFolder.add(ctrlObj,"ambienLightintensity",0,5);
+            ambienLightFolder.addColor(ctrlObj,"ambienLightColor").onChange(function(clr){
+                ambienLight.color = new Color(clr);
+            });
+
+            var spotLightFolder = ctrl.addFolder("spotLight");
+            spotLightFolder.add(ctrlObj,"spotLightintensity",0,5);
+            spotLightFolder.addColor(ctrlObj,"spotLightColor").onChange(function(clr){
+                spotLight.color = new Color(clr);
+            });
+
+            spotLightFolder.add(ctrlObj,"spotLightDistance",0,1000).onChange(function(dis){
+                spotLight.distance = dis;
+            });
+
+            spotLightFolder.add(ctrlObj,"spotLightAngle",0,Math.PI * 2).onChange(function(angle){
+                spotLight.angle = angle;
+            });
+
+            spotLightFolder.add(ctrlObj,"spotPenumbra",0,1).onChange(function(pen){
+                spotLight.penumbra = pen;
+            });
+
+            spotLightFolder.add(ctrlObj,"spotDecay",0,5).onChange(function(dec){
+                spotLight.decay = dec;
+            });
+
+           
+            var geometry = new BoxGeometry(8,8,8);
+            var material = new MeshLambertMaterial({color:0xff2288});
+            var cube = new Mesh(geometry,material);
+            cube.castShadow = true;
+            cube.position.x = 0;
+            cube.position.y = 8;
+            cube.position.z = 0;
+            scene.add(cube);
+
+            renderScene();
+
+            function renderScene(){ 
+                lightHelper.update();
+                shadowCameraHelper.update();
+
+                ambienLight.intensity = ctrlObj.ambienLightintensity;
+                spotLight.intensity = ctrlObj.spotLightintensity;
+
+                requestAnimationFrame(renderScene);
+                render.render(scene,camera);
+            }
+
+            window.addEventListener('resize',onWindowResize,false);
+
+            function onWindowResize(){
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                render.setSize(window.innerWidth,window.innerHeight);
+            }
+        </script>
+
+</body>
+
+</html>

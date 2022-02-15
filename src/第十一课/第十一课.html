@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>动力IT实训-threejs-011</title>
+    <meta charset="UTF-8" />
+    <!-- <script type="module" charset="UTF-8" src="../../libs/three.js/Three.js"></script> -->
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!--我们将把threejs渲染的效果显示在这个div中-->
+    <div id="puiedu-webgl-output">
+
+    </div>
+
+    <div id="myStats"></div>
+
+    <script type="module">
+
+            import * as THREE from "../../libs/build/three.module.js"
+            import {dat} from "../../libs/dat.gui/dat.gui.js"
+            import {GLTFLoader} from "../../libs/three.js/jsm/loaders/GLTFLoader.js"
+            import {OrbitControls} from "../../libs/three.js/jsm/controls/OrbitControls.js"           
+                
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);            
+
+            var render = new THREE.WebGLRenderer();
+            render.setClearColor(new THREE.Color(0x000000));
+            render.setSize(window.innerWidth,window.innerHeight);
+            render.shadowMap.enabled = true;
+            
+            document.getElementById("puiedu-webgl-output").appendChild(render.domElement);
+
+             // show axes in the screen
+            var axes = new THREE.AxesHelper(50);
+            scene.add(axes);    
+            
+            loadModel();
+
+            var planeGeometry = new THREE.PlaneGeometry(100,100);
+            var planeMaterial = new THREE.MeshLambertMaterial({color:0xAAAAAA});
+            var plane = new THREE.Mesh(planeGeometry,planeMaterial);
+
+            plane.rotation.x = -0.5 * Math.PI;
+            plane.position.set(15,0,0);
+            plane.receiveShadow = true;
+
+            scene.add(plane);
+
+            camera.position.x = -5;
+            camera.position.y = 5;
+            camera.position.z = 5;
+            camera.lookAt(scene.position);
+            scene.add(camera);
+        
+            const directionalLight = new THREE.DirectionalLight(0xffffff,4);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.position.set(20,20,20);
+            scene.add(directionalLight);
+
+            var controls = new OrbitControls(camera,render.domElement);
+            controls.update();
+
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff,0x00ff00,1);
+            hemisphereLight.position.set(100,50,100);
+            scene.add(hemisphereLight);
+
+            var ctrlObj = {
+                hemisphereLightVisible:true,
+                skyColor:0xffffff, 
+                groundColor:0x00ff00,  
+                hemisphereIntensity:1,          
+            }
+
+            var ctrl = new dat.GUI();
+            var hemisphereLightFolder = ctrl.addFolder("hemisphereLight");
+            hemisphereLightFolder.add(ctrlObj,"hemisphereLightVisible").onChange(function(e){
+                hemisphereLight.visible = e;
+            });
+
+            hemisphereLightFolder.addColor(ctrlObj,"skyColor").onChange(function(e){
+                hemisphereLight.color = new THREE.Color(e);
+            });
+
+            hemisphereLightFolder.addColor(ctrlObj,"groundColor").onChange(function(e){
+                hemisphereLight.groundColor = new THREE.Color(e);
+            });
+
+            hemisphereLightFolder.add(ctrlObj,"hemisphereIntensity",0,10).onChange(function(e){
+                hemisphereLight.intensity = e;
+            });
+
+            renderScene();
+
+            function renderScene(){ 
+                controls.update();
+                requestAnimationFrame(renderScene);
+                render.render(scene,camera);
+            }
+
+            window.addEventListener('resize',onWindowResize,false);
+
+            function onWindowResize(){                
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                render.setSize(window.innerWidth,window.innerHeight);
+            }
+
+            function loadModel(){
+                new GLTFLoader().setPath("model/")
+                .load("untitled.glb",function(gltf){
+                    gltf.scene.scale.set(0.01,0.01,0.01);
+                    gltf.scene.traverse(function(object){
+                        if (object.isMesh)
+                        object.castShadow = true;
+                    });
+
+                    scene.add(gltf.scene);
+                })
+            }
+        </script>
+
+</body>
+
+</html>
